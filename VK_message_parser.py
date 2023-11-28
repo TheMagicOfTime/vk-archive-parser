@@ -1,8 +1,7 @@
 import lxml.etree as etree
-import os, glob, requests, shutil, urllib.parse, time
+import os, glob, requests, shutil, time, re, sys
 from threading import Thread, Lock
 from progress.bar import IncrementalBar
-import re
 
 g_files_parsed = 0 
 lock = Lock()
@@ -48,7 +47,7 @@ def download_images(files_in_folder, files_numbers):
                         if len(images_block) > 1:
                             image_number_in_block += 1
                             time_stamp_str_name = time_stamp_str_name + "_" + str(image_number_in_block)
-                        time_stamp_str_name = os.getcwd() + "/folder_images/" + time_stamp_str_name + ".jpg"
+                        time_stamp_str_name = os.getcwd() + "/{}/".format(sys.argv[2]) + time_stamp_str_name + ".jpg"
                         r = requests.get(images.text, stream=True)
                         r.raw.decode_content = True
                         with open(time_stamp_str_name,'wb') as img_f:
@@ -59,27 +58,28 @@ def download_images(files_in_folder, files_numbers):
         lock.acquire()
         g_files_parsed += 1
         lock.release()
-        
-folder_name = os.getcwd() + "/folder/"
-files_in_folder = sorted(glob.glob(os.path.join(folder_name, '*.html')), reverse=True)
+
+if __name__ == "__main__":
+    folder_name = sys.argv[1]
+    files_in_folder = sorted(glob.glob(os.path.join(folder_name, '*.html')), reverse=True)
 
 
-step = (int)(len(files_in_folder) / 16)
-residue = (int)(len(files_in_folder) % 16)
-x = []
-for i in range(16):
-    if i == 0:
-        x.append(Thread(target=download_images, args=(files_in_folder[0 : step + residue],step + residue)))
-    else:
-        x.append(Thread(target=download_images, args=(files_in_folder[step * i + residue : step * i + step + residue],step + residue)))
-    x[i].start()
+    step = (int)(len(files_in_folder) / 16)
+    residue = (int)(len(files_in_folder) % 16)
+    x = []
+    for i in range(16):
+        if i == 0:
+            x.append(Thread(target=download_images, args=(files_in_folder[0 : step + residue],step + residue)))
+        else:
+            x.append(Thread(target=download_images, args=(files_in_folder[step * i + residue : step * i + step + residue],step + residue)))
+        x[i].start()
 
-bar = IncrementalBar('Parsed files', max = len(files_in_folder))
+    bar = IncrementalBar('Parsed files', max = len(files_in_folder))
 
-while g_files_parsed != len(files_in_folder):
-    time.sleep(1)
-    bar.index =g_files_parsed
-    bar.update()
+    while g_files_parsed != len(files_in_folder):
+        time.sleep(1)
+        bar.index =g_files_parsed
+        bar.update()
 
-for i in range(16):
-    x[i].join()
+    for i in range(16):
+        x[i].join()
