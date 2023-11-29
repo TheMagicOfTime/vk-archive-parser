@@ -43,13 +43,28 @@ def is_me_author_message(block):
         return False
     except IndexError:
         return True
-    
+
 def save_image(url, name):
     r = requests.get(url, stream=True)
     r.raw.decode_content = True
     with open(name,'wb') as img_f:
         shutil.copyfileobj(r.raw, img_f)
+
+def save_images_from_message(images_block, time_stamp_str, is_me_author_message):
+    image_number_in_block = 0
+    for image in images_block:
+        full_img_name = time_stamp_str
+        if len(images_block) > 1:
+            image_number_in_block += 1
+            full_img_name += "_" + str(image_number_in_block)
+        full_img_name = "{}/".format(sys.argv[2]) + full_img_name + ("_me" if is_me_author_message else "_you") + ".jpg"
+        save_image(image.text, full_img_name)
         
+def get_images_from_message(block):
+    time_stamp_str = parse_time_str(block.xpath(".//div[@class='message__header']/text()"))
+    images_block = block.xpath(".//a[@class='attachment__link']")
+    save_images_from_message(images_block, time_stamp_str, is_me_author_message(block))
+    
 def parse_message_files(files_in_folder,):
     global g_files_parsed
     for messages in files_in_folder:
@@ -57,21 +72,9 @@ def parse_message_files(files_in_folder,):
             html_file = f.read()
         tree = etree.HTML(html_file)
         for block in tree.xpath("//div[@class='item']"):
-            try:
-                if is_message_has_photo(block):
-                    base_time_stamp_str_name = parse_time_str(block.xpath(".//div[@class='message__header']/text()"))
-                    images_block = block.xpath(".//a[@class='attachment__link']")
-                    image_number_in_block = 0
-                    for images in images_block:
-                        time_stamp_str_name = base_time_stamp_str_name
-                        if len(images_block) > 1:
-                            image_number_in_block += 1
-                            time_stamp_str_name = time_stamp_str_name + "_" + str(image_number_in_block)
-                        time_stamp_str_name = "{}/".format(sys.argv[2]) + time_stamp_str_name + ("_me" if is_me_author_message(block) else "_you") + ".jpg"
-                        save_image(images.text, time_stamp_str_name)
-            except IndexError:
-                continue
-        
+            if is_message_has_photo(block):
+                get_images_from_message(block)
+
         lock.acquire()
         g_files_parsed += 1
         lock.release()
