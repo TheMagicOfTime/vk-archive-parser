@@ -44,6 +44,12 @@ def is_me_author_message(block):
     except IndexError:
         return True
     
+def save_image(url, name):
+    r = requests.get(url, stream=True)
+    r.raw.decode_content = True
+    with open(name,'wb') as img_f:
+        shutil.copyfileobj(r.raw, img_f)
+        
 def parse_message_files(files_in_folder,):
     global g_files_parsed
     for messages in files_in_folder:
@@ -62,10 +68,7 @@ def parse_message_files(files_in_folder,):
                             image_number_in_block += 1
                             time_stamp_str_name = time_stamp_str_name + "_" + str(image_number_in_block)
                         time_stamp_str_name = "{}/".format(sys.argv[2]) + time_stamp_str_name + ("_me" if is_me_author_message(block) else "_you") + ".jpg"
-                        r = requests.get(images.text, stream=True)
-                        r.raw.decode_content = True
-                        with open(time_stamp_str_name,'wb') as img_f:
-                            shutil.copyfileobj(r.raw, img_f)
+                        save_image(images.text, time_stamp_str_name)
             except IndexError:
                 continue
         
