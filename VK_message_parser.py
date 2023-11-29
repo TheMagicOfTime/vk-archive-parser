@@ -30,6 +30,13 @@ def parse_time_str(time_stamp):
         time_stamp_str_name = time_stamp_str_name + "_" + str(date_numbers[i])
     return time_stamp_str_name
 
+def is_message_has_photo(block):
+    try:
+        if block.xpath(".//div[@class='attachment__description']")[0].text == "Фотография":
+            return True
+    except IndexError:
+        return False
+
 def is_me_author_message(block):
     try:
         block.xpath(".//div[@class='message__header']/a")[0].text
@@ -45,7 +52,7 @@ def parse_message_files(files_in_folder,):
         tree = etree.HTML(html_file)
         for block in tree.xpath("//div[@class='item']"):
             try:
-                if block.xpath(".//div[@class='attachment__description']")[0].text == "Фотография":
+                if is_message_has_photo(block):
                     is_me_author = is_me_author_message(block)
                     base_time_stamp_str_name = parse_time_str(block.xpath(".//div[@class='message__header']/text()"))
                     images_block = block.xpath(".//a[@class='attachment__link']")
