@@ -55,7 +55,7 @@ def download_images(files_in_folder,):
                         if len(images_block) > 1:
                             image_number_in_block += 1
                             time_stamp_str_name = time_stamp_str_name + "_" + str(image_number_in_block)
-                        time_stamp_str_name = os.getcwd() + "/{}/".format(sys.argv[2]) + time_stamp_str_name + ("_me" if is_me_author else "_you") + ".jpg"
+                        time_stamp_str_name = "{}/".format(sys.argv[2]) + time_stamp_str_name + ("_me" if is_me_author else "_you") + ".jpg"
                         r = requests.get(images.text, stream=True)
                         r.raw.decode_content = True
                         with open(time_stamp_str_name,'wb') as img_f:
