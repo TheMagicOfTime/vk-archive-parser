@@ -37,7 +37,7 @@ def is_me_author_message(block):
     except IndexError:
         return True
     
-def download_images(files_in_folder,):
+def parse_message_files(files_in_folder,):
     global g_files_parsed
     for messages in files_in_folder:
         with open(messages, "r", encoding="windows-1251") as f:
@@ -77,9 +77,9 @@ if __name__ == "__main__":
     x = []
     for i in range(16):
         if i == 0:
-            x.append(Thread(target=download_images, args=(files_in_folder[0 : step + residue],)))
+            x.append(Thread(target=parse_message_files, args=(files_in_folder[0 : step + residue],)))
         else:
-            x.append(Thread(target=download_images, args=(files_in_folder[step * i + residue : step * i + step + residue],)))
+            x.append(Thread(target=parse_message_files, args=(files_in_folder[step * i + residue : step * i + step + residue],)))
         x[i].start()
 
     bar = IncrementalBar('Parsed files', max = len(files_in_folder))
