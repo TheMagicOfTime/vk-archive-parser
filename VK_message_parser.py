@@ -30,7 +30,7 @@ def parse_time_str(time_stamp):
         time_stamp_str_name = time_stamp_str_name + "_" + str(date_numbers[i])
     return time_stamp_str_name
 
-def download_images(files_in_folder, files_numbers):
+def download_images(files_in_folder,):
     global g_files_parsed
     for messages in files_in_folder:
         with open(messages, "r", encoding="windows-1251") as f:
@@ -69,9 +69,9 @@ if __name__ == "__main__":
     x = []
     for i in range(16):
         if i == 0:
-            x.append(Thread(target=download_images, args=(files_in_folder[0 : step + residue],step + residue)))
+            x.append(Thread(target=download_images, args=(files_in_folder[0 : step + residue],)))
         else:
-            x.append(Thread(target=download_images, args=(files_in_folder[step * i + residue : step * i + step + residue],step + residue)))
+            x.append(Thread(target=download_images, args=(files_in_folder[step * i + residue : step * i + step + residue],)))
         x[i].start()
 
     bar = IncrementalBar('Parsed files', max = len(files_in_folder))
